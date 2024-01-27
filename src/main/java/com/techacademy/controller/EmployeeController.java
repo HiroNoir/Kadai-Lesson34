@@ -59,8 +59,10 @@ public class EmployeeController {
     // 従業員更新画面
     @GetMapping(value = "/{code}/update")
     public String edit(@PathVariable String code, Model model) {
-
+        if(code != null) {
+            // codeがnullでない場合：一覧画面から遷移してきたと判定し、Modelにはサービスから取得したemployeeをセットする
         model.addAttribute("employee", employeeService.findByCode(code));
+        }
         return "employees/update";
     }
 
@@ -112,7 +114,10 @@ public class EmployeeController {
 
         // 入力チェック
         if (res.hasErrors()) {
-            return edit(code, model);
+         // エラー有りの場合は、更新しようとしたemployeeをモデルにセットして、再度遷移するeditメソッドにemployeeを引き渡す
+            model.addAttribute("employee", employee);
+         // editメソッドを呼び出す際に入力チェックエラー有りからの遷移として、引数のcodeにnullを設定しておく
+            return edit(null, model);
         }
 
         ErrorKinds result = employeeService.update(employee);
