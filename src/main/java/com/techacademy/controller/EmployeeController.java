@@ -56,6 +56,14 @@ public class EmployeeController {
         return "employees/new";
     }
 
+    // 従業員更新画面
+    @GetMapping(value = "/{code}/update")
+    public String edit(@PathVariable String code, Model model) {
+
+        model.addAttribute("employee", employeeService.findByCode(code));
+        return "employees/update";
+    }
+
     // 従業員新規登録処理
     @PostMapping(value = "/add")
     public String add(@Validated Employee employee, BindingResult res, Model model) {
@@ -93,6 +101,26 @@ public class EmployeeController {
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DUPLICATE_EXCEPTION_ERROR),
                     ErrorMessage.getErrorValue(ErrorKinds.DUPLICATE_EXCEPTION_ERROR));
             return create(employee);
+        }
+
+        return "redirect:/employees";
+    }
+
+    // 従業員更新処理
+    @PostMapping(value = "/{code}/update")
+    public String update(@PathVariable String code, @Validated Employee employee, BindingResult res, Model model) {
+
+        // 入力チェック
+        if (res.hasErrors()) {
+            return edit(code, model);
+        }
+
+        ErrorKinds result = employeeService.update(employee);
+
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            model.addAttribute("employee", employeeService.findByCode(code));
+            return edit(code, model);
         }
 
         return "redirect:/employees";

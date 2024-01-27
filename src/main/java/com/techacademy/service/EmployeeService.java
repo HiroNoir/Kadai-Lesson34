@@ -52,6 +52,37 @@ public class EmployeeService {
         return ErrorKinds.SUCCESS;
     }
 
+
+    // 従業員更新
+    @Transactional
+    public ErrorKinds update(Employee employee) {
+
+        // パスワードチェック
+        // 更新画面におけるパスワードの画面入力値が空でない場合は画面入力値が暗号化された値で登録
+        if (!("".equals(employee.getPassword()))) {
+        ErrorKinds result = employeePasswordCheck(employee);
+        if (ErrorKinds.CHECK_OK != result) {
+            return result;
+        }
+        }else {
+        // 更新画面におけるパスワードの画面入力値が空の場合はデータベースに設定済みの値画面入力値が暗号化された値を代入
+        employee.setPassword(this.findByCode(employee.getCode()).getPassword());
+        }
+
+        // 論理削除フラグをfalseで設定　（代入しておかなくてもnullエラーは発生しなかったが、念のため設定）
+        employee.setDeleteFlg(false);
+
+        // 登録日時はデータベースに設定済みの値を代入　（代入しておかないとnullエラーが発生する）
+        employee.setCreatedAt(this.findByCode(employee.getCode()).getCreatedAt());
+
+        // 更新日時のみ現在日時で更新
+        LocalDateTime now = LocalDateTime.now();
+        employee.setUpdatedAt(now);
+
+        employeeRepository.save(employee);
+        return ErrorKinds.SUCCESS;
+    }
+
     // 従業員削除
     @Transactional
     public ErrorKinds delete(String code, UserDetail userDetail) {
